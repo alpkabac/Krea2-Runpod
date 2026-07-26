@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1.7
+
+# Dedicated Krea 2 Serverless image.  Keep this separate from the Anima image:
+# Krea needs different core weights and its LoRAs are acquired per job.
+FROM runpod/worker-comfyui:5.8.5-base
+
+COPY comfyui_custom_nodes/ComfyUI-Megumin-NanoGPT /comfyui/custom_nodes/ComfyUI-Megumin-NanoGPT
+COPY comfyui_custom_nodes/ComfyUI-Megumin-RuntimeLora /comfyui/custom_nodes/ComfyUI-Megumin-RuntimeLora
+COPY data/krea2_baked_loras.json /tmp/krea2_baked_loras.json
+COPY runpod/download_baked_loras.py /tmp/download_baked_loras.py
+
+# Core Krea 2 Turbo files.  The fp8 text encoder keeps the Serverless footprint
+# practical; all three paths match the supplied Krea API workflow.
+RUN comfy model download \
+  --url https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors \
+  --relative-path models/diffusion_models \
+  --filename krea2_turbo_fp8_scaled.safetensors
+
+RUN comfy model download \
+  --url https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors \
+  --relative-path models/text_encoders \
+  --filename qwen3vl_4b_fp8_scaled.safetensors
+
+RUN comfy model download \
+  --url https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors \
+  --relative-path models/vae \
+  --filename qwen_image_vae.safetensors
+
+# Add Civitai or Hugging Face LoRAs to data/krea2_baked_loras.json.  The same
+# manifest is read by the extension so its filenames appear in the Finder.
+# Other selected LoRAs remain on-demand hf:// downloads.
+RUN python3 /tmp/download_baked_loras.py /tmp/krea2_baked_loras.json
+
+# Change only when deliberately widening the allowed runtime source.  The custom
+# node defaults to this same value, but making it visible aids endpoint debugging.
+ENV MEGUMIN_RUNTIME_LORA_REPOS=malcolmrey/krea2
