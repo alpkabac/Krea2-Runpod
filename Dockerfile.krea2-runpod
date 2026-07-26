@@ -4,6 +4,10 @@
 # Krea needs different core weights and its LoRAs are acquired per job.
 FROM runpod/worker-comfyui:5.8.5-base
 
+# worker-comfyui ships an older comfy-cli that treats civitai.red as an unknown
+# host and skips CIVITAI_API_TOKEN.  v1.7.3+ recognizes .red and attaches auth.
+RUN pip install --no-cache-dir --upgrade "comfy-cli>=1.7.3"
+
 COPY comfyui_custom_nodes/ComfyUI-Megumin-NanoGPT /comfyui/custom_nodes/ComfyUI-Megumin-NanoGPT
 COPY comfyui_custom_nodes/ComfyUI-Megumin-RuntimeLora /comfyui/custom_nodes/ComfyUI-Megumin-RuntimeLora
 COPY data/krea2_baked_loras.json /tmp/krea2_baked_loras.json
@@ -26,11 +30,9 @@ RUN comfy model download \
   --relative-path models/vae \
   --filename qwen_image_vae.safetensors
 
-# Add Civitai or Hugging Face LoRAs to data/krea2_baked_loras.json.  The same
-# manifest is read by the extension so its filenames appear in the Finder.
-# Other selected LoRAs remain on-demand hf:// downloads.
-# Civitai assets that require login need CIVITAI_API_TOKEN as a BuildKit secret
-# (comfy_cli reads that env name). The secret is not copied into the final image.
+# Add Civitai or Hugging Face LoRAs to data/krea2_baked_loras.json.  Keep NSFW
+# assets on civitai.red.  CIVITAI_API_TOKEN is a BuildKit secret only for this
+# step; it is not copied into the final image.
 RUN --mount=type=secret,id=civitai_api_token \
     CIVITAI_API_TOKEN="$(cat /run/secrets/civitai_api_token 2>/dev/null || true)" \
     && if [ -z "$CIVITAI_API_TOKEN" ]; then \
