@@ -29,7 +29,16 @@ RUN comfy model download \
 # Add Civitai or Hugging Face LoRAs to data/krea2_baked_loras.json.  The same
 # manifest is read by the extension so its filenames appear in the Finder.
 # Other selected LoRAs remain on-demand hf:// downloads.
-RUN python3 /tmp/download_baked_loras.py /tmp/krea2_baked_loras.json
+# Civitai assets that require login need CIVITAI_API_TOKEN as a BuildKit secret
+# (comfy_cli reads that env name). The secret is not copied into the final image.
+RUN --mount=type=secret,id=civitai_api_token \
+    CIVITAI_API_TOKEN="$(cat /run/secrets/civitai_api_token 2>/dev/null || true)" \
+    && if [ -z "$CIVITAI_API_TOKEN" ]; then \
+         echo "Missing BuildKit secret civitai_api_token (set GitHub secret CIVITAI_API_TOKEN)." >&2; \
+         exit 1; \
+       fi \
+    && export CIVITAI_API_TOKEN \
+    && python3 /tmp/download_baked_loras.py /tmp/krea2_baked_loras.json
 
 # Change only when deliberately widening the allowed runtime source.  The custom
 # node defaults to this same value, but making it visible aids endpoint debugging.
