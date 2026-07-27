@@ -28,6 +28,23 @@ The node uses Python's standard library and requires no additional pip packages.
 
 `%prompt%` remains available for ordinary workflows. `%ai_text%` is optional and only affects workflows that include it.
 
+## identity_suffix (LoRA trigger words)
+
+`identity_suffix` is an **optional** widget. If your workflow needs literal trigger
+words (e.g. `a woman, a woman` for two stacked character LoRAs) to always be
+present in the final prompt, put them here instead of writing them into
+`ai_text`.
+
+This text is **never sent to the LLM** — it is appended in Python, after the
+API call succeeds *or* falls back, directly onto whatever text is about to be
+returned. This guarantees the trigger phrase always lands in the prompt that
+reaches `CLIP Text Encode`, without depending on the model to "understand"
+and faithfully reproduce a meta-instruction. Smaller/faster chat models are
+prone to echoing instruction-shaped text (e.g. "Use the exact trigger phrase
+X for identity Y") verbatim into their output instead of transforming it,
+which pollutes the actual image prompt with nonsense. Keeping trigger-word
+injection out of the LLM's hands avoids that failure mode entirely.
+
 The endpoint defaults to:
 
 ```text
