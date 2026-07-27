@@ -8,6 +8,35 @@ FROM runpod/worker-comfyui:5.8.5-base
 # host and skips CIVITAI_API_TOKEN.  v1.7.3+ recognizes .red and attaches auth.
 RUN pip install --no-cache-dir --upgrade "comfy-cli>=1.7.3"
 
+# The 5.8.5-base image baked in whatever ComfyUI was "latest" on its March 2026
+# build date (ComfyUI 0.17.2 / rev 4905). Krea 2 support (native `krea2`
+# CLIPLoader type + the Krea2 single-stream DiT model class) only landed in
+# ComfyUI upstream on 2026-06-22 (Comfy-Org/ComfyUI#14589), first shipping in
+# tagged release v0.26.0 (2026-06-23). Without this, CLIPLoader type="krea2"
+# fails prompt validation ("Value not in list"), and even swapping to a
+# different CLIP type would silently mis-encode the prompt or fail model
+# detection on UNETLoader, since 0.17.2 also predates model_detection.py /
+# supported_models.py support for the Krea2 architecture entirely.
+#
+# Pin to a specific tag (not "latest") for reproducible builds.
+RUN comfy --workspace /comfyui install --version v0.28.0 --nvidia -y
+
+# comfy-cli installs ComfyUI into its own workspace venv (/comfyui/.venv), but
+# worker-comfyui's start.sh launches ComfyUI with /opt/venv's python (see
+# runpod-workers/worker-comfyui#227, "DR-1170"). Re-sync ComfyUI's + custom
+# nodes' requirements into /opt/venv after the version bump, exactly like
+# worker-comfyui's own 5.8.6 fix does, so the launch venv doesn't end up
+# missing a dependency the new ComfyUI version needs.
+RUN pip install --no-cache-dir -r /comfyui/requirements.txt \
+    && for r in /comfyui/custom_nodes/*/requirements.txt; do \
+         [ -f "$r" ] && pip install --no-cache-dir -r "$r" || true; \
+       done
+
+# Build-time smoke test: actually import/start ComfyUI on CPU so a bad version
+# bump fails the GitHub Actions build with a clear traceback, instead of
+# silently shipping an image that fails at runtime on a live RunPod worker.
+RUN cd /comfyui && timeout 300 python main.py --quick-test-for-ci --cpu
+
 COPY comfyui_custom_nodes/ComfyUI-Megumin-NanoGPT /comfyui/custom_nodes/ComfyUI-Megumin-NanoGPT
 COPY comfyui_custom_nodes/ComfyUI-Megumin-RuntimeLora /comfyui/custom_nodes/ComfyUI-Megumin-RuntimeLora
 COPY data/krea2_baked_loras.json /tmp/krea2_baked_loras.json
