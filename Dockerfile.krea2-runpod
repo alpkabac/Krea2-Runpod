@@ -24,14 +24,21 @@ RUN pip install --no-cache-dir --upgrade "comfy-cli>=1.7.3"
 # option on the root `comfy` command, not `install` -- there is no `-y` on
 # `install` itself; that belongs to the newer `comfy setup` wizard).
 #
-# --skip-torch-or-directml is deliberate: without it, comfy-cli's install
-# step reinstalls torch -- with --nvidia it guesses a CUDA tag that may not
-# match this base image's already-correct GPU torch build, and if no GPU
-# flag were passed at all it would install CPU-only torch instead, silently
-# breaking GPU inference. Skipping it entirely leaves the base image's
-# already-correct torch/CUDA install untouched; we only need ComfyUI's own
-# application code + its requirements.txt updated.
-RUN comfy --skip-prompt --workspace /comfyui install --version v0.28.0 --skip-torch-or-directml
+# --restore is required because /comfyui already exists in this base image:
+# `install`'s CLI wrapper hard-stops with "ComfyUI is already installed...
+# add '--restore'" otherwise (that check lives in cmdline.py, before
+# install.py's execute() is ever called).
+#
+# --nvidia is required too: the CLI unconditionally errors out with "No GPU
+# option selected" if none of --nvidia/--amd/--m-series/--intel-arc/--cpu is
+# passed, regardless of --skip-torch-or-directml. But --skip-torch-or-directml
+# makes that --nvidia choice a no-op for torch itself: it short-circuits BOTH
+# the CUDA-tag resolution (`_resolve_cuda(...) if not skip_torch_or_directml
+# else (cuda_version, None)`) and every torch-install branch inside
+# pip_install_comfyui_dependencies. So this combination satisfies the CLI's
+# validation without ever touching the base image's already-correct
+# torch/CUDA build.
+RUN comfy --skip-prompt --workspace /comfyui install --version v0.28.0 --nvidia --skip-torch-or-directml --restore
 
 # comfy-cli installs ComfyUI into its own workspace venv (/comfyui/.venv), but
 # worker-comfyui's start.sh launches ComfyUI with /opt/venv's python (see
