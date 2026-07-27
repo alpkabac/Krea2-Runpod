@@ -19,7 +19,19 @@ RUN pip install --no-cache-dir --upgrade "comfy-cli>=1.7.3"
 # supported_models.py support for the Krea2 architecture entirely.
 #
 # Pin to a specific tag (not "latest") for reproducible builds.
-RUN comfy --workspace /comfyui install --version v0.28.0 --nvidia -y
+#
+# --skip-prompt is comfy-cli's actual non-interactive flag (it's a global
+# option on the root `comfy` command, not `install` -- there is no `-y` on
+# `install` itself; that belongs to the newer `comfy setup` wizard).
+#
+# --skip-torch-or-directml is deliberate: without it, comfy-cli's install
+# step reinstalls torch -- with --nvidia it guesses a CUDA tag that may not
+# match this base image's already-correct GPU torch build, and if no GPU
+# flag were passed at all it would install CPU-only torch instead, silently
+# breaking GPU inference. Skipping it entirely leaves the base image's
+# already-correct torch/CUDA install untouched; we only need ComfyUI's own
+# application code + its requirements.txt updated.
+RUN comfy --skip-prompt --workspace /comfyui install --version v0.28.0 --skip-torch-or-directml
 
 # comfy-cli installs ComfyUI into its own workspace venv (/comfyui/.venv), but
 # worker-comfyui's start.sh launches ComfyUI with /opt/venv's python (see
