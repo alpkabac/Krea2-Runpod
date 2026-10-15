@@ -7,10 +7,9 @@ on:
     paths:
       - "Dockerfile.krea2-runpod"
       - "data/krea2_baked_loras.json"
+      - "data/krea2_models.json"
       - "runpod/download_baked_loras.py"
-      - "comfyui_custom_nodes/ComfyUI-Megumin-NanoGPT/**"
-      - "comfyui_custom_nodes/ComfyUI-Megumin-RuntimeLora/**"
-      - ".github/workflows/krea2-runpod-image.yml"
+      - ".github/workflows/docker-image.yml"
 
 permissions:
   contents: read

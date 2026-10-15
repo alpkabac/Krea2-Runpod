@@ -1,12 +1,12 @@
 [
   {
-    "filename": "megumin-default-civitai-3027612.safetensors",
-    "label": "Megumin default Civitai LoRA",
+    "filename": "krea2_nsfw_v4_3_exp.safetensors",
+    "label": "Krea 2 NSFW V4 (v4.3_EXP)",
     "url": "https://civitai.red/api/download/models/3147117?fileId=3027612"
   },
   {
-    "filename": "snofs1.2.safetensors",
-    "label": "Snofs Lora",
-    "url": "https://civitai.red/api/download/models/3172362?fileId=3059229"
+    "filename": "snofs_krea_v1_4.safetensors",
+    "label": "SNOFS v1.4",
+    "url": "https://civitai.red/api/download/models/3290120?fileId=3174557"
   }
 ]

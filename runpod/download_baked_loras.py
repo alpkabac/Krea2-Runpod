@@ -1,4 +1,4 @@
-"""Download the user-maintained Krea baked-LoRA manifest during Docker build."""
+"""Download a Krea manifest (LoRAs by default, or any models/ subfolder via "relative_path") during Docker build."""
 
 import json
 import os
@@ -19,6 +19,9 @@ for item in manifest:
         raise ValueError("Every Krea baked LoRA item must be an object")
     filename = str(item.get("filename", "")).strip()
     url = str(item.get("url", "")).strip()
+    relative_path = str(item.get("relative_path", "models/loras")).strip()
+    if not relative_path.startswith("models/") or ".." in relative_path.split("/"):
+        raise ValueError(f"Invalid relative_path for {filename!r}: {relative_path!r}")
     if not filename.lower().endswith(".safetensors") or "/" in filename or "\\" in filename:
         raise ValueError(f"Invalid baked LoRA filename: {filename!r}")
     if not url.startswith(("https://", "http://")):
@@ -31,6 +34,6 @@ for item in manifest:
                 f"(missing for {filename!r})"
             )
     subprocess.run(
-        ["comfy", "model", "download", "--url", url, "--relative-path", "models/loras", "--filename", filename],
+        ["comfy", "model", "download", "--url", url, "--relative-path", relative_path, "--filename", filename],
         check=True,
     )

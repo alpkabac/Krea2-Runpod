@@ -1,0 +1,58 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": { "unet_name": "dasiwa_krea2_darkdesire_v3_turbo_uc_fp8.safetensors", "weight_dtype": "default" }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": { "clip_name": "qwen3vl_4b_fp8_scaled.safetensors", "type": "krea2", "device": "default" }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": { "vae_name": "qwen_image_vae.safetensors" }
+  },
+  "4": {
+    "class_type": "LoraLoader",
+    "inputs": {
+      "model": ["1", 0], "clip": ["2", 0],
+      "lora_name": "krea2_nsfw_v4_3_exp.safetensors",
+      "strength_model": 0.8, "strength_clip": 0.8
+    }
+  },
+  "5": {
+    "class_type": "LoraLoader",
+    "inputs": {
+      "model": ["4", 0], "clip": ["4", 1],
+      "lora_name": "snofs_krea_v1_4.safetensors",
+      "strength_model": 0.8, "strength_clip": 0.8
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "clip": ["5", 1], "text": "%prompt%" }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "clip": ["5", 1], "text": "%negative_prompt%" }
+  },
+  "8": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": { "width": %width%, "height": %height%, "batch_size": 1 }
+  },
+  "9": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["5", 0], "positive": ["6", 0], "negative": ["7", 0], "latent_image": ["8", 0],
+      "seed": %seed%, "steps": %steps%, "cfg": %cfg%,
+      "sampler_name": "%sampler%", "scheduler": "%scheduler%", "denoise": 1.0
+    }
+  },
+  "10": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["9", 0], "vae": ["3", 0] }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": { "images": ["10", 0], "filename_prefix": "krea2" }
+  }
+}
