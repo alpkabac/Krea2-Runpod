@@ -7,9 +7,9 @@ Marinara can't list LoRAs from the RunPod endpoint, so paste the filename exactl
 - `krea2_nsfw_v4_3_exp.safetensors` — Krea 2 NSFW V4 (v4.3_EXP)
 - `snofs_krea_v1_4.safetensors` — SNOFS v1.4
 
-## On the network volume (`models/loras`)
+## Also baked into the image (malcolmrey/krea2)
 
-Downloaded with `runpod/download_malcolmrey_loras.py` (newest 3 versions per person). Regenerate this list with `--names-only`.
+Downloaded at build time by `runpod/download_malcolmrey_loras.py` (newest 3 versions per person). Regenerate this list with `--names-only`.
 
 - `krea2_abbyshapiro_v1_onetrainer.safetensors`
 - `krea2_alexandradaddario_v1_onetrainer.safetensors`

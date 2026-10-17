@@ -9,6 +9,8 @@ on:
       - "data/krea2_baked_loras.json"
       - "data/krea2_models.json"
       - "runpod/download_baked_loras.py"
+      - "runpod/download_malcolmrey_loras.py"
+      - "data/malcolmrey_subjects.txt"
       - ".github/workflows/docker-image.yml"
 
 permissions:

@@ -42,3 +42,12 @@ RUN --mount=type=secret,id=civitai_api_token \
        fi \
     && export CIVITAI_API_TOKEN \
     && python3 /tmp/download_baked_loras.py /tmp/krea2_baked_loras.json
+
+# malcolmrey/krea2 LoRAs (public on Hugging Face, no token needed).  The subject
+# list and the keep-newest-N rule live in data/malcolmrey_subjects.txt and
+# runpod/download_malcolmrey_loras.py; names are listed in LORAS.md.
+COPY runpod/download_malcolmrey_loras.py /tmp/download_malcolmrey_loras.py
+COPY data/malcolmrey_subjects.txt /tmp/malcolmrey_subjects.txt
+RUN python3 /tmp/download_malcolmrey_loras.py \
+    --subjects-file /tmp/malcolmrey_subjects.txt \
+    --out /comfyui/models/loras
