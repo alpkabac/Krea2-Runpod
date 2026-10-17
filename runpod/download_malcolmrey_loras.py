@@ -117,8 +117,8 @@ def main():
 
     chosen, missing = select(list_repo_files(), subjects, args.keep)
     if args.names_only:
-        print(*(f["path"] for f in chosen), sep="
-")
+        for f in chosen:
+            print(f["path"])
         return
     total = sum(f["size"] for f in chosen)
     print(f"{len(subjects)} subjects -> {len(chosen)} files, {total / 1e9:.2f} GB (keeping newest {args.keep} versions each)")
