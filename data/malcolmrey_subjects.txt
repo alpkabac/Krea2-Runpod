@@ -1,0 +1,26 @@
+# One malcolmrey/krea2 subject per line (the name between 'krea2_' and the version).
+# Lines starting with # are ignored. Add a name here to also download that person.
+abbyshapiro
+alexandradaddario
+alextanner
+amandaseyfried
+annehathaway
+billieeilish
+blakelively
+brookemonk
+brycedallashoward
+camerondiaz
+deborahannwoll
+drewbarrymore
+erinmoriarty
+florencepugh
+irene
+jamieleecurtis
+kanonnhokawa
+leightonmeester
+maggiegyllenhaal
+sabrinacarpenter
+scarlettjohansson
+vanessakirby
+yoonchae
+zaralarsson
